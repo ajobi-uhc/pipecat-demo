@@ -76,27 +76,6 @@ export const TransportProvider: React.FC<PropsWithChildren> = ({ children }) => 
           }
         ]);
       },
-    //   onAudioTrackStarted: (participant: DailyParticipant, track: MediaStreamTrack) => {
-    //     console.log("[TransportProvider] onAudioTrackStarted =>", {
-    //       participant,
-    //       track: {
-    //         id: track.id,
-    //         kind: track.kind,
-    //         label: track.label,
-    //         enabled: track.enabled
-    //       }
-    //     });
-    //     console.log("[TransportProvider] onAudioTrackStarted => track info", track);
-        
-    //     if (!participant.local) {
-    //       console.log("[TransportProvider] Calling playAudio with track");
-    //       playAudio(track);       
-    //     }
-    //   },
-    //   onAudioTrackStopped: (participant: DailyParticipant, track: MediaStreamTrack) => {
-    //     console.log("[TransportProvider] onAudioTrackStopped =>", participant, track);
-       
-    //   }
     });
 
     transportRef.current = client;
@@ -129,7 +108,6 @@ export const TransportProvider: React.FC<PropsWithChildren> = ({ children }) => 
   };
 
   // 6) Send custom message
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sendMessage = (data: any) => {
     if (!transportRef.current) {
       console.warn("[TransportProvider] transportRef is null, cannot send");

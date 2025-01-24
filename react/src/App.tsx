@@ -2,7 +2,6 @@ import {
   RTVIClientAudio,
 } from 'realtime-ai-react';
 import { ConnectButton } from './components/ConnectButton';
-import { DebugDisplay } from './components/DebugDisplay';
 import { TransportProvider } from './providers/TransportContext';
 import './App.css';
 
@@ -14,7 +13,6 @@ function AppContent() {
         <ConnectButton />
       </div>
 
-      <DebugDisplay />
       <RTVIClientAudio />
     </div>
   );

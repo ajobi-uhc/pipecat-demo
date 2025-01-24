@@ -1,4 +1,3 @@
-// TransportClient.ts
 import DailyIframe, {
     DailyCall,
     DailyEventObjectAppMessage,
@@ -9,7 +8,7 @@ import DailyIframe, {
     DailyParticipant
 } from "@daily-co/daily-js";
 
-import { ApiClient } from "./ApiClient"; // your server calls
+import { ApiClient } from "./ApiClient";
 import { logger } from "./logger";
 
 

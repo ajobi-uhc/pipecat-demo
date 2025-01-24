@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Live2DModelControl {
   playAudio: (audioBuffer: ArrayBuffer) => Promise<void>;
