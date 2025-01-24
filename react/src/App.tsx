@@ -1,6 +1,5 @@
 import {
   RTVIClientAudio,
-  useRTVIClientTransportState,
 } from 'realtime-ai-react';
 import { RTVIProvider } from './providers/RTVIProvider';
 import { ConnectButton } from './components/ConnectButton';

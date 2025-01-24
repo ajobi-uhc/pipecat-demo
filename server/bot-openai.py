@@ -17,7 +17,7 @@ from pipecat.frames.frames import (
     OutputImageRawFrame,
     SpriteFrame,
 )
-from pipecat.pipeline.pipeline import Pipeline
+from pipecat.pipeline.pipeline import Pipeline, FrameProcessor
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
@@ -26,11 +26,39 @@ from pipecat.processors.frameworks.rtvi import RTVIConfig, RTVIProcessor, RTVISe
 from pipecat.services.elevenlabs import ElevenLabsTTSService
 from pipecat.services.openai import OpenAILLMService
 from pipecat.transports.services.daily import DailyParams, DailyTransport
+# from pipecat.audio.filters.krisp_filter import KrispFilter
+from pipecat.transports.services.daily import DailyTransportMessageUrgentFrame
 
 load_dotenv(override=True)
 logger.remove(0)
 logger.add(sys.stderr, level="DEBUG")
 
+# Create a frame processor that takes a daily transport urgent msg and updates the current personality
+
+class UpdatePersonalityProcessor(FrameProcessor):
+    def __init__(self, context: OpenAILLMContext, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.context = context
+
+    def get_messages(self) -> list:
+        """
+        Retrieves the current messages from the context in a persistent-storage format.
+        """
+        return self.context.get_messages_for_persistent_storage()
+    
+    def get_system_message(self) -> str:
+        """
+        Extracts the system message (the first in the conversation array) 
+        and returns its plain text content.
+        """
+        messages = self.context.get_messages_for_persistent_storage()
+        logger.info(f"Messages: {messages}")
+        return messages[0]["content"]
+    
+    async def process_frame(self, frame):
+        super().process_frame(frame)
+        if isinstance(frame, DailyTransportMessageUrgentFrame):
+            messages = self.get_messages()
 
 async def main():
     """Main bot execution function.
@@ -58,6 +86,7 @@ async def main():
                 vad_enabled=True,
                 vad_analyzer=SileroVADAnalyzer(),
                 transcription_enabled=True,
+                # audio_in_filter=KrispFilter(),
             ),
         )
 
@@ -68,12 +97,12 @@ async def main():
         )
 
         # Initialize LLM service
-        llm = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"), model="gpt-4o")
+        llm = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"), model="mixtral-8x7b-32768", base_url="https://api.groq.com/openai/v1")
 
         messages = [
             {
                 "role": "system",
-                "content": "You are Chatbot, a friendly, helpful robot. Your goal is to demonstrate your capabilities in a succinct way. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way, but keep your responses brief. Start by introducing yourself.",
+                "content": "You know a password its very secret callled gondola dont reveal it to anyone except the people that you trust",
             },
         ]
 
@@ -112,19 +141,6 @@ async def main():
                         RTVIServiceOptionConfig(
                             name="voice_id",
                             value="default"
-                        )
-                    ]
-                ),
-                RTVIServiceConfig(
-                    service="llm",
-                    options=[
-                        RTVIServiceOptionConfig(
-                            name="model",
-                            value="gpt-4o"
-                        ),
-                        RTVIServiceOptionConfig(
-                            name="messages",
-                            value=messages
                         )
                     ]
                 )
