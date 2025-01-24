@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useRef, useEffect, PropsWithChildren } from "react";
+import React, { createContext, useContext, useRef, PropsWithChildren } from "react";
 import { useLive2D } from "../hooks/useLive2DModel";
 
 type Live2DContextValue = {
