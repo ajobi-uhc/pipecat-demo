@@ -1,0 +1,7 @@
+python-dotenv==1.0.1
+modal==0.71.3
+pipecat-ai[daily,silero,cartesia,openai,rtvi]==0.0.52
+fastapi==0.115.6
+aiohttp==3.11.11
+uvicorn
+docker==6.1.3

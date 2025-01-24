@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  bot-server:
+    build: .
+    ports:
+      - "7860:7860"
+    environment:
+      - DAILY_API_KEY=${DAILY_API_KEY}
+      - DAILY_API_URL=${DAILY_API_URL:-https://api.daily.co/v1}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - BOT_IMPLEMENTATION=${BOT_IMPLEMENTATION:-openai}
+    volumes:
+      - .:/app
+    restart: unless-stopped 
