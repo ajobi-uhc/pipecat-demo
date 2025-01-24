@@ -1,21 +1,16 @@
-import { useRTVIClient, useRTVIClientTransportState } from 'realtime-ai-react';
+import { useTransport } from "../providers/TransportContext";
+
 
 export function ConnectButton() {
-  const client = useRTVIClient();
-  const transportState = useRTVIClientTransportState();
-  const isConnected = ['connected', 'ready'].includes(transportState);
+  const { connectToAi, disconnectAi, aiState } = useTransport();
+  const isConnected = ['connected', 'ready'].includes(aiState);
 
   const handleClick = async () => {
-    if (!client) {
-      console.error('RTVI client is not initialized');
-      return;
-    }
-
     try {
       if (isConnected) {
-        await client.disconnect();
+        await disconnectAi();
       } else {
-        await client.connect();
+        await connectToAi();
       }
     } catch (error) {
       console.error('Connection error:', error);
@@ -28,7 +23,7 @@ export function ConnectButton() {
         className={isConnected ? 'disconnect-btn' : 'connect-btn'}
         onClick={handleClick}
         disabled={
-          !client || ['connecting', 'disconnecting'].includes(transportState)
+        ['connecting', 'disconnecting'].includes(aiState)
         }>
         {isConnected ? 'Disconnect' : 'Connect'}
       </button>

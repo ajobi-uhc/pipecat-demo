@@ -178,6 +178,11 @@ async def get_token_for_room(room_url: str) -> str:
         raise HTTPException(status_code=500, detail=f"Failed to get token for room: {room_url}")
     return token
 
+@app.get("/get_daily_url_token")
+async def rtvi_connect_existing(request: Request) -> Dict[Any, Any]:
+    room_url = "https://dweller-tester.daily.co/test"
+    token = await get_token_for_room(room_url)
+    return {"daily_url": room_url, "daily_token": token}
 
 @app.post("/connect")
 async def rtvi_connect(request: Request) -> Dict[Any, Any]:

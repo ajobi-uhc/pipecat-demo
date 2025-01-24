@@ -10,7 +10,7 @@ const client = new RTVIClient({
   params: {
     baseUrl: 'http://localhost:7860',
     endpoints: {
-      connect: '/connect',
+      connect: '/connect',      
     },
     config: [
       {

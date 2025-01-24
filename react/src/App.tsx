@@ -1,10 +1,10 @@
 import {
   RTVIClientAudio,
 } from 'realtime-ai-react';
-import { RTVIProvider } from './providers/RTVIProvider';
 import { ConnectButton } from './components/ConnectButton';
 import { StatusDisplay } from './components/StatusDisplay';
 import { DebugDisplay } from './components/DebugDisplay';
+import { TransportProvider } from './providers/TransportContext';
 import './App.css';
 
 
@@ -24,9 +24,9 @@ function AppContent() {
 
 function App() {
   return (
-    <RTVIProvider>
+    <TransportProvider>
       <AppContent />
-    </RTVIProvider>
+    </TransportProvider>
   );
 }
 

@@ -179,57 +179,17 @@ We are on a gameshow, where I must compete with another AI for your heart. Choos
             },
         ]
 
+
+
         # Set up conversation context and management
         # The context_aggregator will automatically collect conversation context
         context = OpenAILLMContext(messages)
         context_aggregator = llm.create_context_aggregator(context)
 
-        # Create voice service handler
-        async def handle_voice_option(processor, service, option):
-            if option.name == "voice_id":
-                # Update TTS service voice ID
-                tts.voice_id = option.value
-                logger.info(f"Voice ID updated to: {option.value}")
-
-
-        voice_service = RTVIService(
-            name="voice",
-            options=[
-                RTVIServiceOption(
-                    name="voice_id",
-                    type="string",
-                    handler=handle_voice_option
-                )
-            ]
-        )
-
-        #
-        # RTVI events for Pipecat client UI
-        #
-        initial_config = RTVIConfig(
-            config=[
-                RTVIServiceConfig(
-                    service="voice",
-                    options=[
-                        RTVIServiceOptionConfig(
-                            name="voice_id",
-                            value="default"
-                        )
-                    ]
-                )
-            ]
-        )
-
-        rtvi = RTVIProcessor(
-            config=initial_config
-        )
-
-        rtvi.register_service(voice_service)
-
+        
         pipeline = Pipeline(
             [
                 transport.input(),
-                rtvi,
                 context_aggregator.user(),
                 llm,
                 tts,
@@ -246,10 +206,6 @@ We are on a gameshow, where I must compete with another AI for your heart. Choos
                 enable_usage_metrics=True,
             ),
         )
-
-        @rtvi.event_handler("on_client_ready")
-        async def on_client_ready(rtvi):
-            await rtvi.set_bot_ready()
 
         @transport.event_handler("on_first_participant_joined")
         async def on_first_participant_joined(transport, participant):
