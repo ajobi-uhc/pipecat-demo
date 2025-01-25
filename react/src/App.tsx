@@ -1,23 +1,24 @@
-import {
-  RTVIClientAudio,
-} from 'realtime-ai-react';
+import {RTVIClientAudio, useRTVIClientTransportState} from 'realtime-ai-react';
 import { RTVIProvider } from './providers/RTVIProvider';
-import { ConnectButton } from './components/ConnectButton';
-import { StatusDisplay } from './components/StatusDisplay';
 import { DebugDisplay } from './components/DebugDisplay';
+import LandingScreen from './components/LandingScreen';
 import './App.css';
 
 
 function AppContent() {
+  const transportState = useRTVIClientTransportState();
+  const isConnected = ['connected', 'ready'].includes(transportState);
+
   return (
     <div className="app">
-      <div className="status-bar">
-        <StatusDisplay />
-        <ConnectButton />
-      </div>
-
-      <DebugDisplay />
-      <RTVIClientAudio />
+      {!isConnected ? (
+        <LandingScreen />
+      ) : (
+        <>
+          <DebugDisplay />
+          <RTVIClientAudio />
+        </>
+      )}
     </div>
   );
 }
