@@ -128,3 +128,58 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Add to App.css */
+.landing-container {
+  min-height: 100vh;
+  background-color: #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.logo {
+  max-width: 500px;
+  width: 90%;
+}
+
+.logo-image {
+  width: 100%;
+  height: auto;
+}
+
+/* Style the ConnectButton within landing page */
+.connect-wrapper .controls button {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  padding: 1rem 4rem;
+  background: transparent;
+  border: 3px solid #00f7ff;
+  color: #00f7ff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+  box-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
+  text-transform: uppercase;
+}
+
+.connect-wrapper .controls button:hover:not(:disabled) {
+  background: rgba(0, 247, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.connect-wrapper .controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Override ConnectButton's default styles */
+.connect-wrapper .controls .connect-btn,
+.connect-wrapper .controls .disconnect-btn {
+  background: transparent;
+}
