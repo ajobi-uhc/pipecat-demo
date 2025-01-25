@@ -1,6 +1,6 @@
 import { logger as log} from './logger';
 
-const API_URL = 'http://localhost:7860'
+const API_URL = 'https://hackathon-test.fly.dev'
 
 export interface AiFilter {
   creator_id?: string;
