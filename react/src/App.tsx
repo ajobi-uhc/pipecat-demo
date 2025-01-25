@@ -1,11 +1,9 @@
-import {
-  RTVIClientAudio,
-} from 'realtime-ai-react';
 import { ConnectButton } from './components/ConnectButton';
 import { StatusDisplay } from './components/StatusDisplay';
 import { DebugDisplay } from './components/DebugDisplay';
 import { TransportProvider } from './providers/TransportContext';
 import './App.css';
+import { ConnectedParticipants } from './components/ConnectedParticipants';
 
 
 function AppContent() {
@@ -14,10 +12,10 @@ function AppContent() {
       <div className="status-bar">
         <StatusDisplay />
         <ConnectButton />
+        <ConnectedParticipants />
       </div>
 
       <DebugDisplay />
-      <RTVIClientAudio />
     </div>
   );
 }

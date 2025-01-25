@@ -21,6 +21,11 @@ type InboundMessage = {
   time: number;
 };
 
+type ConnectedParticipant = {
+  username: string;
+  id: string;
+};
+
 type TransportContextType = {
   connectToAi: () => Promise<void>;
   disconnectAi: () => Promise<void>;
@@ -29,6 +34,7 @@ type TransportContextType = {
   aiState: AiTransportState;
   messages: InboundMessage[];
   startScreenShare: () => Promise<void>;
+  participants: ConnectedParticipant[];
 };
 
 const TransportContext = createContext<TransportContextType | null>(null);
@@ -37,6 +43,7 @@ export const TransportProvider: React.FC<PropsWithChildren> = ({ children }) => 
   const transportRef = useRef<TransportClient | null>(null);
   const [aiState, setAiState] = useState<AiTransportState>("idle");
   const [messages, setMessages] = useState<InboundMessage[]>([]);
+  const [participants, setParticipants] = useState<ConnectedParticipant[]>([]);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   // We'll store a ScriptProcessorNode per participant
@@ -60,9 +67,11 @@ export const TransportProvider: React.FC<PropsWithChildren> = ({ children }) => 
       },
       onParticipantJoined: (pid) => {
         console.log("[TransportProvider] participant joined:", pid);
+        setParticipants(prev => [...prev, {username: pid.user_name, id: pid.session_id}]);
       },
       onParticipantLeft: (pid) => {
         console.log("[TransportProvider] participant left:", pid);
+        setParticipants(prev => prev.filter(p => p.id !== pid.session_id));
       },
       // 4a) Capture inbound "app-message"
       onCustomMessage: (data, fromId) => {
@@ -119,6 +128,7 @@ export const TransportProvider: React.FC<PropsWithChildren> = ({ children }) => 
     transportRef.current = null;
     setAiState("disconnected");
     setMessages([]); // Clear messages on disconnect
+    setParticipants([]);
 
     audioProcessorsRef.current.forEach((proc) => proc.disconnect());
     audioProcessorsRef.current.clear();
@@ -178,7 +188,8 @@ export const TransportProvider: React.FC<PropsWithChildren> = ({ children }) => 
         sendMessage,
         aiState,
         messages,
-        startScreenShare
+        startScreenShare,
+        participants
       }}>
       {children}
     </TransportContext.Provider>

@@ -130,9 +130,7 @@ async def main():
             "Chatbot",
             DailyParams(
                 audio_out_enabled=True,
-                camera_out_enabled=True,
-                camera_out_width=1024,
-                camera_out_height=576,
+                camera_out_enabled=False,
                 vad_enabled=True,
                 vad_analyzer=SileroVADAnalyzer(),
                 transcription_enabled=True,

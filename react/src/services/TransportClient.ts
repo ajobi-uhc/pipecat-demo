@@ -130,11 +130,21 @@ export class TransportClient {
             
             await this.dailyCall.join();
             await this.dailyCall.setLocalAudio(true);
-            
-            await ApiClient.connectToAiPool(
-                this.dailyUrl,
-                this.dailyToken
-            );
+
+
+            // Only call this if there isnt already an AI participant called Chatbot
+            const participants = this.dailyCall.participants();
+            const participantCount = Object.keys(participants).length;
+            console.log("[TransportClient] participantCount:", participantCount);
+            if (participantCount <= 1) {
+                logger.info("[TransportClient] No other participants found, connecting AI");
+                await ApiClient.connectToAiPool(
+                    this.dailyUrl,
+                    this.dailyToken
+                );
+            } else {
+                logger.info("[TransportClient] Other participants found, skipping AI connection");
+            }
 
         } catch (err: unknown) {
             logger.error("[TransportClient] connect failed:", err);
