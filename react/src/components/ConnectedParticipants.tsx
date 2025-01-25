@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Participant, RTVIEvent } from 'realtime-ai';
-import { useRTVIClient, useRTVIClientEvent } from 'realtime-ai-react';
+import { useRTVIClient, useRTVIClientEvent, useRTVIClientTransportState } from 'realtime-ai-react';
 import './ConnectedParticipants.css';
 
 interface ConnectedParticipant {
@@ -11,6 +11,19 @@ interface ConnectedParticipant {
 export function ConnectedParticipants() {
   const [participants, setParticipants] = useState<ConnectedParticipant[]>([]);
   const client = useRTVIClient();
+  const transportState = useRTVIClientTransportState();
+
+
+  useEffect(() => {
+    if (transportState === 'connected') {
+      setParticipants(prev => [
+        ...prev,
+        { id: 'local', name: 'You (Local)', isLocal: true }
+      ]);
+    } else if (transportState === 'disconnected') {
+      setParticipants([]);
+    }
+  }, [transportState]);
 
   // Handle participant joined events
   useRTVIClientEvent(

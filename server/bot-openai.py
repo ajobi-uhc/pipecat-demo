@@ -154,9 +154,11 @@ We are on a gameshow, where I must compete with another AI for your heart. Choos
             ),
         )
 
-        @rtvi.event_handler("on_client_ready")
-        async def on_client_ready(rtvi):
-            await rtvi.set_bot_ready()
+        print("Bot initialized")
+
+        # @rtvi.event_handler("on_client_ready")
+        # async def on_client_ready(rtvi):
+        #     await rtvi.set_bot_ready()
 
         @transport.event_handler("on_first_participant_joined")
         async def on_first_participant_joined(transport, participant):
