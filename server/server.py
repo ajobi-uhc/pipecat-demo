@@ -180,7 +180,7 @@ async def get_token_for_room(room_url: str) -> str:
 
 @app.get("/get_daily_url_token")
 async def rtvi_connect_existing(request: Request) -> Dict[Any, Any]:
-    room_url = "https://dweller-tester.daily.co/test"
+    room_url = "https://dweller-tester.daily.co/audiotester"
     token = await get_token_for_room(room_url)
     return {"daily_url": room_url, "daily_token": token}
 
@@ -198,7 +198,7 @@ async def rtvi_connect(request: Request) -> Dict[Any, Any]:
     """
     # Get request body
     body = await request.json()
-    room_url = body.get("room_url", "https://dweller-tester.daily.co/test")
+    room_url = body.get("room_url", "https://dweller-tester.daily.co/audiotester")
     num_bots = body.get("num_bots", 1)  # Default to 1 bot if not specified
 
     if not room_url:
