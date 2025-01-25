@@ -1,0 +1,31 @@
+.participants-container {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.participants-container h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.participant-box {
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.participant-box span {
+  font-size: 14px;
+  color: #333;
+} 

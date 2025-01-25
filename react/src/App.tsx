@@ -6,6 +6,8 @@ import { ConnectButton } from './components/ConnectButton';
 import { StatusDisplay } from './components/StatusDisplay';
 import { DebugDisplay } from './components/DebugDisplay';
 import './App.css';
+import { UsernameForm } from './components/UsernameForm';
+import { ConnectedParticipants } from './components/ConnectedParticipants';
 
 
 function AppContent() {
@@ -14,6 +16,8 @@ function AppContent() {
       <div className="status-bar">
         <StatusDisplay />
         <ConnectButton />
+        <UsernameForm />
+        <ConnectedParticipants />
       </div>
 
       <DebugDisplay />

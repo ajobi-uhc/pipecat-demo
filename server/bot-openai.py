@@ -16,99 +16,42 @@ from pipecat.frames.frames import (
     Frame,
     OutputImageRawFrame,
     SpriteFrame,
+    UserStoppedSpeakingFrame,
+    LLMMessagesAppendFrame,
 )
 from pipecat.pipeline.pipeline import Pipeline, FrameProcessor
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
-from pipecat.processors.frameworks.rtvi import RTVIConfig, RTVIProcessor, RTVIServiceConfig, RTVIServiceOptionConfig, RTVIServiceOption, RTVIService
+from pipecat.processors.frameworks.rtvi import RTVIConfig, RTVIProcessor, RTVIServiceConfig, RTVIServiceOptionConfig, RTVIServiceOption, RTVIService, RTVIMessage
 from pipecat.services.elevenlabs import ElevenLabsTTSService
 from pipecat.services.openai import OpenAILLMService
 from pipecat.transports.services.daily import DailyParams, DailyTransport
 # from pipecat.audio.filters.krisp_filter import KrispFilter
 from pipecat.transports.services.daily import DailyTransportMessageUrgentFrame
-
 load_dotenv(override=True)
 logger.remove(0)
 logger.add(sys.stderr, level="DEBUG")
 
-# Create a frame processor that takes a daily transport urgent msg and updates the current personality
+# Create a frame processor that takes adds the current speaking user to messages as context
+class UpdateCurrentSpeakerProcessor(FrameProcessor):
+    def __init__(self):
+        super().__init__()
+        self.participant_username = None
+        self.participant_id = None
+    async def process_frame(self, frame, direction):
+        await super().process_frame(frame, direction)
 
-# class UpdatePersonalityProcessor(FrameProcessor):
-#     def __init__(self, context: OpenAILLMContext, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.context = context
-
-#     def get_messages(self) -> list:
-#         """
-#         Retrieves the current messages from the context in a persistent-storage format.
-#         """
-#         return self.context.get_messages_for_persistent_storage()
-    
-#     def get_system_message(self) -> str:
-#         """
-#         Extracts the system message (the first in the conversation array) 
-#         and returns its plain text content.
-#         """
-#         messages = self.context.get_messages_for_persistent_storage()
-#         logger.info(f"Messages: {messages}")
-#         return messages[0]["content"]
-    
-#     async def process_frame(self, frame):
-#         super().process_frame(frame)
-#         if isinstance(frame, DailyTransportMessageUrgentFrame):
-#             messages = self.get_messages()
-
-#     async def add_item_to_in_context_messages(self, content, item_type, replace=False):
-#         """
-#         Add memory to in-context memories and propagate changes through pipeline
-#         Args:
-#             content: The memory content to add
-#             memory_type: Type of memory ("memories" or "profile")
-#             replace: If True, replaces existing memories instead of appending
-#         """
-#         if item_type not in ["memories", "profile"]:
-#             logger.error(f"Invalid memory type: {item_type}")
-#             return
-
-#         try:
-#             section_markers = SYSTEM_MESSAGE_SECTION_MARKERS()
-#             start_marker, end_marker = section_markers[item_type]
-            
-#             # Create a copy of the current messages to modify
-#             new_messages = self.get_messages()
-#             system_message = self.get_system_message()
-            
-#             # Split the system message into parts
-#             before_section, section_and_after = system_message.split(start_marker, 1)
-#             section, after_section = section_and_after.split(end_marker, 1)
-
-#             if replace:
-#                 updated_section = content
-#             else:
-#                 updated_section = f"{section.strip()}\n{content}".strip()
-
-#             # Reconstruct the system message
-#             new_system_message = (
-#                 f"{before_section}{start_marker}\n"
-#                 f"{updated_section}\n\n"
-#                 f"{end_marker}{after_section}"
-#             )
-
-#             # Update the system message in the new messages array
-#             new_messages[0]["content"] = new_system_message
-            
-#             # Create update frame to propagate changes
-#             update_frame = LLMMessagesUpdateFrame(new_messages)
-#             self.latest_messages_set = new_messages
-#             logger.info(f"Sending update system message, timestamp: {datetime.now()}")
-#             # Schedule the frame to be pushed
-#             await self.push_frame(update_frame)
+        if isinstance(frame, RTVIMessage):
+            logger.info(f"RTVIMessage: {frame}")
+            self.participant_username = frame.message
+            self.participant_id = frame.participant_id
         
-#         except Exception as e:
-#             logger.error(f"Error adding item to in-context messages: {e}")
-            
+        if isinstance(frame, UserStoppedSpeakingFrame) and self.participant_username:
+            await self.push_frame(LLMMessagesAppendFrame(messages=[{"role": "system", "content": f"The current speaking user is {self.participant_username}"}]))
+        
+        await self.push_frame(frame, direction)
 
 async def main():
     """Main bot execution function.
@@ -184,53 +127,17 @@ We are on a gameshow, where I must compete with another AI for your heart. Choos
         context = OpenAILLMContext(messages)
         context_aggregator = llm.create_context_aggregator(context)
 
-        # Create voice service handler
-        async def handle_voice_option(processor, service, option):
-            if option.name == "voice_id":
-                # Update TTS service voice ID
-                tts.voice_id = option.value
-                logger.info(f"Voice ID updated to: {option.value}")
+        rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
 
 
-        voice_service = RTVIService(
-            name="voice",
-            options=[
-                RTVIServiceOption(
-                    name="voice_id",
-                    type="string",
-                    handler=handle_voice_option
-                )
-            ]
-        )
-
-        #
-        # RTVI events for Pipecat client UI
-        #
-        initial_config = RTVIConfig(
-            config=[
-                RTVIServiceConfig(
-                    service="voice",
-                    options=[
-                        RTVIServiceOptionConfig(
-                            name="voice_id",
-                            value="default"
-                        )
-                    ]
-                )
-            ]
-        )
-
-        rtvi = RTVIProcessor(
-            config=initial_config
-        )
-
-        rtvi.register_service(voice_service)
+        add_name_processor = UpdateCurrentSpeakerProcessor()
 
         pipeline = Pipeline(
             [
                 transport.input(),
                 rtvi,
                 context_aggregator.user(),
+                # add_name_processor,
                 llm,
                 tts,
                 transport.output(),

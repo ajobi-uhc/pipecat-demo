@@ -181,7 +181,7 @@ async def get_token_for_room(room_url: str) -> str:
 
 @app.post("/connect")
 async def rtvi_connect(request: Request) -> Dict[Any, Any]:
-    """RTVI connect endpoint that gets a token for an existing room and spawns bots.
+    """RTVI connect endpoint that creates a room and returns connection credentials.
 
     This endpoint is called by RTVI clients to establish a connection.
 
@@ -189,47 +189,27 @@ async def rtvi_connect(request: Request) -> Dict[Any, Any]:
         Dict[Any, Any]: Authentication bundle containing room_url and token
 
     Raises:
-        HTTPException: If token generation or bot startup fails
+        HTTPException: If room creation, token generation, or bot startup fails
     """
-    # Get request body
-    body = await request.json()
-    room_url = body.get("room_url", "https://dweller-tester.daily.co/test")
-    num_bots = body.get("num_bots", 1)  # Default to 1 bot if not specified
-
-    if not room_url:
-        raise HTTPException(status_code=400, detail="room_url is required")
-
-    if num_bots > MAX_BOTS_PER_ROOM:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"Requested {num_bots} bots exceeds maximum of {MAX_BOTS_PER_ROOM}"
-        )
-
-    print(f"Getting token for room: {room_url}")
+    print("Creating room for RTVI connection")
+    room_url = "https://dweller-tester.daily.co/test"
     token = await get_token_for_room(room_url)
 
-    # Start the requested number of bot processes
-    bot_pids = []
+    # Start the bot process
     try:
         bot_file = get_bot_file()
-        for _ in range(num_bots):
-            proc = subprocess.Popen(
-                [f"python3 -m {bot_file} -u {room_url} -t {token}"],
-                shell=True,
-                bufsize=1,
-                cwd=os.path.dirname(os.path.abspath(__file__)),
-            )
-            bot_procs[proc.pid] = (proc, room_url)
-            bot_pids.append(proc.pid)
+        proc = subprocess.Popen(
+            [f"python3 -m {bot_file} -u {room_url} -t {token}"],
+            shell=True,
+            bufsize=1,
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+        )
+        bot_procs[proc.pid] = (proc, room_url)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start subprocess: {e}")
 
-    # Return the authentication bundle with bot process IDs
-    return {
-        "room_url": room_url,
-        "token": token,
-        "bot_pids": bot_pids
-    }
+    # Return the authentication bundle in format expected by DailyTransport
+    return {"room_url": room_url, "token": token}
 
 
 @app.get("/status/{pid}")
